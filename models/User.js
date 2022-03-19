@@ -3,13 +3,13 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema(
   {
     username: {
-      type: 'string',
+      type: String,
       unique: true,
       required: true,
       trim: true,
     },
     email: {
-      type: 'string',
+      type: String,
       unique: true,
       required: true,
       validate: {
@@ -38,9 +38,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-userSchema.virtual('friendCount').get(function () {
-  return this.friends.length;
-});
+userSchema.virtual('friendCount').get(() => this.friends.length);
 
 const User = mongoose.model('user', userSchema);
 
