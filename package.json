@@ -1,0 +1,37 @@
+{
+  "name": "social-media-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "watch": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AidKool/social-media-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AidKool/social-media-api/issues"
+  },
+  "homepage": "https://github.com/AidKool/social-media-api#readme",
+  "devDependencies": {
+    "eslint": "^8.8.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-promise": "^6.0.0",
+    "nodemon": "^2.0.15",
+    "prettier": "^2.5.1"
+  },
+  "dependencies": {
+    "express": "^4.17.3",
+    "mongoose": "^6.2.7"
+  }
+}
