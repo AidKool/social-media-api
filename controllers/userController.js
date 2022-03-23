@@ -1,3 +1,4 @@
+const { isValidObjectId } = require('mongoose');
 const { User } = require('../models');
 
 function getUsers(_, res) {
@@ -13,74 +14,89 @@ function createUser(req, res) {
 }
 
 function getUserByID(req, res) {
-  User.findOne({ _id: req.params.userID })
-    .select('-__v')
-    .populate('thoughts')
-    .populate('friends')
-    .then((user) =>
-      user
-        ? res.status(200).json(user)
-        : res.status(404).json({ message: 'No user with that ID' })
-    )
-    .catch((error) => res.status(500).json(error));
+  if (isValidObjectId(req.params.userID)) {
+    return User.findOne({ _id: req.params.userID })
+      .select('-__v')
+      .populate('thoughts')
+      .populate('friends')
+      .then((user) =>
+        user
+          ? res.status(200).json(user)
+          : res.status(404).json({ message: 'No user with that ID' })
+      )
+      .catch((error) => res.status(500).json(error));
+  }
+  return res.status(404).json({ message: 'Invalid User ID' });
 }
 
 function updateUser(req, res) {
-  User.findOneAndUpdate(
-    { _id: req.body.id },
-    { $set: { username: req.body.username, email: req.body.email } }
-  )
-    .then((user) =>
-      user
-        ? res.status(200).json(user)
-        : res.status(404).json({ message: 'No user with that ID' })
+  if (isValidObjectId(req.body.id)) {
+    return User.findOneAndUpdate(
+      { _id: req.body.id },
+      { $set: { username: req.body.username, email: req.body.email } }
     )
-    .catch((error) => res.status(500).json(error));
+      .then((user) =>
+        user
+          ? res.status(200).json(user)
+          : res.status(404).json({ message: 'No user with that ID' })
+      )
+      .catch((error) => res.status(500).json(error));
+  }
+  return res.status(404).json({ message: 'Invalid User ID' });
 }
 
 function deleteUser(req, res) {
-  User.findOneAndDelete({ _id: req.body.id })
-    .then((user) =>
-      user
-        ? res.status(200).json(user)
-        : res.status(404).json({ message: 'No user with that ID' })
-    )
-    .catch((error) => res.status(500).json(error));
+  if (isValidObjectId(req.body.id)) {
+    return User.findOneAndDelete({ _id: req.body.id })
+      .then((user) =>
+        user
+          ? res.status(200).json(user)
+          : res.status(404).json({ message: 'No user with that ID' })
+      )
+      .catch((error) => res.status(500).json(error));
+  }
+  return res.status(404).json({ message: 'Invalid User ID' });
 }
 
 function addFriend(req, res) {
-  return Promise.all([
-    User.findOne({ _id: req.params.userID })
-      .exec()
-      .then((user) => user),
-    User.findOne({ _id: req.body.friendID })
-      .exec()
-      .then((friend) => friend),
-  ])
-    .then((results) => {
-      const user = results[0];
-      const friend = results[1];
-      if (!user) {
-        return res.status(404).json({ message: 'No user with that ID' });
-      }
-      if (!friend) {
-        return res.status(404).json({ message: 'Invalid friend ID' });
-      }
+  if (
+    isValidObjectId(req.params.userID) &&
+    isValidObjectId(req.body.friendID)
+  ) {
+    return Promise.all([
+      User.findOne({ _id: req.params.userID })
+        .exec()
+        .then((user) => user),
+      User.findOne({ _id: req.body.friendID })
+        .exec()
+        .then((friend) => friend),
+    ])
+      .then((results) => {
+        const user = results[0];
+        const friend = results[1];
+        if (!user) {
+          return res.status(404).json({ message: 'No user with that ID' });
+        }
+        if (!friend) {
+          return res.status(404).json({ message: 'Invalid friend ID' });
+        }
 
-      return Promise.all([
-        User.updateOne(
-          { _id: req.params.userID },
-          { $addToSet: { friends: req.body.friendID } }
-        ),
-        User.updateOne(
-          { _id: req.body.friendID },
-          { $addToSet: { friends: req.params.userID } }
-        ),
-      ]).then(() =>
-        res.status(201).json({ message: 'Friend added successfully' })
-      );
-    })
-    .catch((error) => res.status(500).json(error));
+        return Promise.all([
+          User.updateOne(
+            { _id: req.params.userID },
+            { $addToSet: { friends: req.body.friendID } }
+          ),
+          User.updateOne(
+            { _id: req.body.friendID },
+            { $addToSet: { friends: req.params.userID } }
+          ),
+        ]).then(() =>
+          res.status(201).json({ message: 'Friend added successfully' })
+        );
+      })
+      .catch((error) => res.status(500).json(error));
+  }
+  return res.status(404).json({ message: 'Invalid ID data' });
 }
 
 module.exports = {
