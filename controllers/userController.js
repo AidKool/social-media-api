@@ -74,11 +74,8 @@ function addFriend(req, res) {
       .then((results) => {
         const user = results[0];
         const friend = results[1];
-        if (!user) {
-          return res.status(404).json({ message: 'No user with that ID' });
-        }
-        if (!friend) {
-          return res.status(404).json({ message: 'Invalid friend ID' });
+        if (!user || !friend) {
+          return res.status(404).json({ message: 'Not Found' });
         }
 
         return Promise.all([
@@ -99,6 +96,44 @@ function addFriend(req, res) {
   return res.status(404).json({ message: 'Invalid ID data' });
 }
 
+function removeFriend(req, res) {
+  if (
+    isValidObjectId(req.params.userID) &&
+    isValidObjectId(req.body.friendID)
+  ) {
+    return Promise.all([
+      User.findOne({ _id: req.params.userID, friends: req.body.friendID })
+        .exec()
+        .then((user) => user),
+      User.findOne({ _id: req.body.friendID, friends: req.params.userID })
+        .exec()
+        .then((friend) => friend),
+    ])
+      .then((results) => {
+        const user = results[0];
+        const friend = results[1];
+        if (!user || !friend) {
+          return res.status(404).json({ message: 'Not Found' });
+        }
+
+        return Promise.all([
+          User.updateOne(
+            { _id: req.params.userID },
+            { $pull: { friends: req.body.friendID } }
+          ),
+          User.updateOne(
+            { _id: req.body.friendID },
+            { $pull: { friends: req.params.userID } }
+          ),
+        ]).then(() =>
+          res.status(201).json({ message: 'Friend removed successfully' })
+        );
+      })
+      .catch((error) => res.status(500).json(error));
+  }
+  return res.status(404).json({ message: 'Invalid ID data' });
+}
+
 module.exports = {
   getUsers,
   createUser,
@@ -106,4 +141,5 @@ module.exports = {
   updateUser,
   deleteUser,
   addFriend,
+  removeFriend,
 };
