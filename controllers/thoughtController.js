@@ -1,5 +1,4 @@
-const Thought = require('../models/Thought');
-const User = require('../models/User');
+const { User, Thought } = require('../models');
 
 function getThoughts(_, res) {
   Thought.find()
@@ -28,4 +27,59 @@ function createThought(req, res) {
     .catch((error) => res.status(500).json(error));
 }
 
-module.exports = { getThoughts, createThought };
+function getThoughtByID(req, res) {
+  Thought.findOne({ _id: req.params.thoughtID })
+    .select('-__v')
+    .then((dbThoughtData) =>
+      dbThoughtData
+        ? res.status(200).json(dbThoughtData)
+        : res.status(404).json({ message: 'No thought with that ID' })
+    )
+    .catch((error) => res.status(500).json(error));
+}
+
+function updateThought(req, res) {
+  Thought.findOneAndUpdate(
+    { _id: req.body.id },
+    { $set: { thoughtText: req.body.thoughtText } }
+  )
+    .then((dbThoughtData) =>
+      dbThoughtData
+        ? res.status(200).json(dbThoughtData)
+        : res.status(404).json({ message: 'No thought with that ID' })
+    )
+    .catch((error) => res.status(500).json(error));
+}
+
+function deleteThought(req, res) {
+  Thought.findOneAndDelete({ _id: req.body.id })
+    .then((dbThoughtData) => {
+      if (!dbThoughtData) {
+        return res.status(404).json({ message: 'No thought with that ID' });
+      }
+      return User.findOneAndUpdate(
+        { thoughts: req.body.id },
+        { $pull: { thoughts: req.body.id } },
+        { new: true }
+      );
+    })
+    .then((dbUserData) => {
+      if (!dbUserData) {
+        return res.status(404).json({
+          // what error status code to use? message?
+          message: 'Thought not associated to a user successfully deleted',
+        });
+      }
+
+      return res.status(200).json({ message: 'Thought successfully deleted' });
+    })
+    .catch((error) => res.status(500).json(error));
+}
+
+module.exports = {
+  getThoughts,
+  createThought,
+  getThoughtByID,
+  updateThought,
+  deleteThought,
+};

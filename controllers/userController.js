@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const { User } = require('../models');
 
 function getUsers(_, res) {
   User.find()
@@ -22,7 +22,7 @@ function getUserByID(req, res) {
         ? res.status(200).json(user)
         : res.status(404).json({ message: 'No user with that ID' })
     )
-    .catch((err) => res.status(500).json(err));
+    .catch((error) => res.status(500).json(error));
 }
 
 function updateUser(req, res) {
@@ -35,7 +35,7 @@ function updateUser(req, res) {
         ? res.status(200).json(user)
         : res.status(404).json({ message: 'No user with that ID' })
     )
-    .catch((err) => res.status(500).json(err));
+    .catch((error) => res.status(500).json(error));
 }
 
 function deleteUser(req, res) {
@@ -45,7 +45,7 @@ function deleteUser(req, res) {
         ? res.status(200).json(user)
         : res.status(404).json({ message: 'No user with that ID' })
     )
-    .catch((err) => res.status(500).json(err));
+    .catch((error) => res.status(500).json(error));
 }
 
 module.exports = { getUsers, createUser, getUserByID, updateUser, deleteUser };
