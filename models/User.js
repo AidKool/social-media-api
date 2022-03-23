@@ -12,10 +12,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       unique: true,
       required: true,
-      validate: {
-        validator: () => Promise.resolve(false),
-        message: 'Email validation failed',
-      },
+      match: [
+        /^([a-z0-9_.-]+)@([\da-z.-]+)\.([a-z.]{2,6})$/,
+        'Add a valid email',
+      ],
     },
     thoughts: [
       {
@@ -38,7 +38,9 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-userSchema.virtual('friendCount').get(() => this.friends.length);
+userSchema.virtual('friendCount').get(function () {
+  return this.friends.length;
+});
 
 const User = mongoose.model('user', userSchema);
 
