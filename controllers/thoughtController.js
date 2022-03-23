@@ -55,7 +55,8 @@ function deleteThought(req, res) {
   Thought.findOneAndDelete({ _id: req.body.id })
     .then((dbThoughtData) => {
       if (!dbThoughtData) {
-        return res.status(404).json({ message: 'No thought with that ID' });
+        return null;
+        // return res.status(404).json({ message: 'No thought with that ID' });
       }
       return User.findOneAndUpdate(
         { thoughts: req.body.id },
@@ -67,7 +68,7 @@ function deleteThought(req, res) {
       if (!dbUserData) {
         return res.status(404).json({
           // what error status code to use? message?
-          message: 'Thought not associated to a user successfully deleted',
+          message: 'No thought with that ID',
         });
       }
 
