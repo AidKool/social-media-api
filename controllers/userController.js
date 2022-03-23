@@ -15,7 +15,7 @@ function createUser(req, res) {
 function getUserByID(req, res) {
   User.findOne({ _id: req.params.userID })
     .select('-__v')
-    // .populate('thoughts')
+    .populate('thoughts')
     // .populate('friends')
     .then((user) =>
       user
