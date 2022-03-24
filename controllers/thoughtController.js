@@ -90,8 +90,6 @@ function deleteThought(req, res) {
 }
 
 function addReaction(req, res) {
-  console.log(req.params.thoughtId);
-  console.log(req.body);
   if (isValidObjectId(req.params.thoughtId)) {
     return Thought.findOneAndUpdate(
       { _id: req.params.thoughtId },
