@@ -1,5 +1,5 @@
 const { isValidObjectId } = require('mongoose');
-const { User } = require('../models');
+const { User, Thought } = require('../models');
 
 function getUsers(_, res) {
   User.find()
@@ -48,11 +48,20 @@ function updateUser(req, res) {
 function deleteUser(req, res) {
   if (isValidObjectId(req.body.id)) {
     return User.findOneAndDelete({ _id: req.body.id })
-      .then((user) =>
-        user
-          ? res.status(200).json(user)
-          : res.status(404).json({ message: 'No user with that ID' })
-      )
+      .then((dbUserData) => {
+        if (!dbUserData) {
+          return null;
+        }
+        return Thought.deleteMany({ _id: { $in: dbUserData.thoughts } });
+      })
+      .then((thoughtData) => {
+        if (!thoughtData) {
+          return res.status(404).json({ message: 'No data found' });
+        }
+        return res
+          .status(200)
+          .json({ message: 'User and their thoughts deleted successfully' });
+      })
       .catch((error) => res.status(500).json(error));
   }
   return res.status(404).json({ message: 'Invalid User ID' });
