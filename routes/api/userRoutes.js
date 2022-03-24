@@ -11,17 +11,15 @@ const {
 } = require('../../controllers/userController');
 
 // /api/users
-router
-  .route('/')
-  .get(getUsers)
-  .post(createUser)
-  .patch(updateUser)
-  .delete(deleteUser);
+router.route('/').get(getUsers).post(createUser);
 
-// /api/users/:userID
-router.route('/:userID').get(getUserByID);
+// /api/users/:userId
+router.route('/:userId').get(getUserByID).patch(updateUser).delete(deleteUser);
 
-// /api/users/friends/
-router.route('/:userID/friends').post(addFriend).delete(removeFriend);
+// /api/users/:userId/friends/
+router.route('/:userId/friends').post(addFriend);
+
+// /api/users/:userId/friends/:friendId
+router.route('/:userId/friends/:friendId').delete(removeFriend);
 
 module.exports = router;

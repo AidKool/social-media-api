@@ -14,8 +14,8 @@ function createUser(req, res) {
 }
 
 function getUserByID(req, res) {
-  if (isValidObjectId(req.params.userID)) {
-    return User.findOne({ _id: req.params.userID })
+  if (isValidObjectId(req.params.userId)) {
+    return User.findOne({ _id: req.params.userId })
       .select('-__v')
       .populate('thoughts')
       .populate('friends')
@@ -30,9 +30,9 @@ function getUserByID(req, res) {
 }
 
 function updateUser(req, res) {
-  if (isValidObjectId(req.body.id)) {
+  if (isValidObjectId(req.params.userId)) {
     return User.findOneAndUpdate(
-      { _id: req.body.id },
+      { _id: req.params.userId },
       { $set: { username: req.body.username, email: req.body.email } }
     )
       .then((user) =>
@@ -46,8 +46,8 @@ function updateUser(req, res) {
 }
 
 function deleteUser(req, res) {
-  if (isValidObjectId(req.body.id)) {
-    return User.findOneAndDelete({ _id: req.body.id })
+  if (isValidObjectId(req.params.userId)) {
+    return User.findOneAndDelete({ _id: req.params.userId })
       .then((dbUserData) => {
         if (!dbUserData) {
           return null;
@@ -69,14 +69,14 @@ function deleteUser(req, res) {
 
 function addFriend(req, res) {
   if (
-    isValidObjectId(req.params.userID) &&
-    isValidObjectId(req.body.friendID)
+    isValidObjectId(req.params.userId) &&
+    isValidObjectId(req.body.friendId)
   ) {
     return Promise.all([
-      User.findOne({ _id: req.params.userID })
+      User.findOne({ _id: req.params.userId })
         .exec()
         .then((user) => user),
-      User.findOne({ _id: req.body.friendID })
+      User.findOne({ _id: req.body.friendId })
         .exec()
         .then((friend) => friend),
     ])
@@ -89,12 +89,12 @@ function addFriend(req, res) {
 
         return Promise.all([
           User.updateOne(
-            { _id: req.params.userID },
-            { $addToSet: { friends: req.body.friendID } }
+            { _id: req.params.userId },
+            { $addToSet: { friends: req.body.friendId } }
           ),
           User.updateOne(
-            { _id: req.body.friendID },
-            { $addToSet: { friends: req.params.userID } }
+            { _id: req.body.friendId },
+            { $addToSet: { friends: req.params.userId } }
           ),
         ]).then(() =>
           res.status(201).json({ message: 'Friend added successfully' })
@@ -107,14 +107,14 @@ function addFriend(req, res) {
 
 function removeFriend(req, res) {
   if (
-    isValidObjectId(req.params.userID) &&
-    isValidObjectId(req.body.friendID)
+    isValidObjectId(req.params.userId) &&
+    isValidObjectId(req.params.friendId)
   ) {
     return Promise.all([
-      User.findOne({ _id: req.params.userID, friends: req.body.friendID })
+      User.findOne({ _id: req.params.userId, friends: req.params.friendId })
         .exec()
         .then((user) => user),
-      User.findOne({ _id: req.body.friendID, friends: req.params.userID })
+      User.findOne({ _id: req.params.friendId, friends: req.params.userId })
         .exec()
         .then((friend) => friend),
     ])
@@ -127,12 +127,12 @@ function removeFriend(req, res) {
 
         return Promise.all([
           User.updateOne(
-            { _id: req.params.userID },
-            { $pull: { friends: req.body.friendID } }
+            { _id: req.params.userId },
+            { $pull: { friends: req.params.friendId } }
           ),
           User.updateOne(
-            { _id: req.body.friendID },
-            { $pull: { friends: req.params.userID } }
+            { _id: req.params.friendId },
+            { $pull: { friends: req.params.userId } }
           ),
         ]).then(() =>
           res.status(201).json({ message: 'Friend removed successfully' })

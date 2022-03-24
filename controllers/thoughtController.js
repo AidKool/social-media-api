@@ -29,8 +29,8 @@ function createThought(req, res) {
 }
 
 function getThoughtByID(req, res) {
-  if (isValidObjectId(req.params.thoughtID)) {
-    return Thought.findOne({ _id: req.params.thoughtID })
+  if (isValidObjectId(req.params.thoughtId)) {
+    return Thought.findOne({ _id: req.params.thoughtId })
       .select('-__v')
       .then((dbThoughtData) =>
         dbThoughtData
@@ -43,9 +43,9 @@ function getThoughtByID(req, res) {
 }
 
 function updateThought(req, res) {
-  if (isValidObjectId(req.body.id)) {
+  if (isValidObjectId(req.params.thoughtId)) {
     return Thought.findOneAndUpdate(
-      { _id: req.body.id },
+      { _id: req.params.thoughtId },
       { $set: { thoughtText: req.body.thoughtText } }
     )
       .then((dbThoughtData) =>
@@ -59,16 +59,16 @@ function updateThought(req, res) {
 }
 
 function deleteThought(req, res) {
-  if (isValidObjectId(req.body.id)) {
-    return Thought.findOneAndDelete({ _id: req.body.id })
+  if (isValidObjectId(req.params.thoughtId)) {
+    return Thought.findOneAndDelete({ _id: req.params.thoughtId })
       .then((dbThoughtData) => {
         if (!dbThoughtData) {
           return null;
           // return res.status(404).json({ message: 'No thought with that ID' });
         }
         return User.findOneAndUpdate(
-          { thoughts: req.body.id },
-          { $pull: { thoughts: req.body.id } },
+          { thoughts: req.params.thoughtId },
+          { $pull: { thoughts: req.params.thoughtId } },
           { new: true }
         );
       })
