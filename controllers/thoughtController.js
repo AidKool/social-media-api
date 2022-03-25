@@ -1,98 +1,78 @@
-const { isValidObjectId } = require('mongoose');
 const { User, Thought } = require('../models');
 
-function getThoughts(_, res) {
-  Thought.find()
-    .then((thoughts) => res.status(200).json(thoughts))
-    .catch((error) => res.status(500).json(error));
-}
-
-function createThought(req, res) {
-  Thought.create(req.body)
-    .then((dbThoughtData) =>
-      User.findOneAndUpdate(
-        { _id: req.body.userID },
-        { $addToSet: { thoughts: dbThoughtData._id } },
-        { new: true }
-      )
-    )
-    .then((dbUserData) => {
-      if (!dbUserData) {
-        return res
-          .status(404)
-          .json({ message: 'Thought created but no User with this ID!' });
-      }
-
-      return res.status(201).json({ message: 'Thought successfully created!' });
-    })
-    .catch((error) => res.status(500).json(error));
-}
-
-function getThoughtByID(req, res) {
-  if (isValidObjectId(req.params.thoughtId)) {
-    return Thought.findOne({ _id: req.params.thoughtId })
-      .select('-__v')
-      .then((dbThoughtData) =>
-        dbThoughtData
-          ? res.status(200).json(dbThoughtData)
-          : res.status(404).json({ message: 'No thought with that ID' })
-      )
-      .catch((error) => res.status(500).json(error));
+async function getThoughts(_, res) {
+  try {
+    const thoughts = await Thought.find();
+    return res.status(200).json(thoughts);
+  } catch (error) {
+    return res.status(400).json({ message: 'Bad request' });
   }
-  return res.status(404).json({ message: 'Invalid Thought ID' });
 }
 
-function updateThought(req, res) {
-  if (isValidObjectId(req.params.thoughtId)) {
-    return Thought.findOneAndUpdate(
-      { _id: req.params.thoughtId },
-      { $set: { thoughtText: req.body.thoughtText } }
-    )
-      .then((dbThoughtData) =>
-        dbThoughtData
-          ? res.status(200).json(dbThoughtData)
-          : res.status(404).json({ message: 'No thought with that ID' })
-      )
-      .catch((error) => res.status(500).json(error));
+async function createThought(req, res) {
+  try {
+    const thought = await Thought.create(req.body);
+    const user = await User.findByIdAndUpdate(req.body.userId, {
+      $addToSet: { thoughts: thought._id },
+    });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: 'Thought created but no User with this ID!' });
+    }
+    return res.status(201).json({ message: 'Thought successfully created!' });
+  } catch (error) {
+    return res.status(400).json({ message: 'Bad request' });
   }
-  return res.status(404).json({ message: 'Invalid Thought ID' });
 }
 
-function deleteThought(req, res) {
-  if (isValidObjectId(req.params.thoughtId)) {
-    return Thought.findOneAndDelete({ _id: req.params.thoughtId })
-      .then((dbThoughtData) => {
-        if (!dbThoughtData) {
-          return null;
-          // return res.status(404).json({ message: 'No thought with that ID' });
-        }
-        return User.findOneAndUpdate(
-          { thoughts: req.params.thoughtId },
-          { $pull: { thoughts: req.params.thoughtId } },
-          { new: true }
-        );
-      })
-      .then((dbUserData) => {
-        if (!dbUserData) {
-          return res.status(404).json({
-            // what error status code to use? message?
-            message: 'No thought with that ID',
-          });
-        }
-
-        return res
-          .status(200)
-          .json({ message: 'Thought successfully deleted' });
-      })
-      .catch((error) => res.status(500).json(error));
+async function getThoughtByID(req, res) {
+  try {
+    const thought = await Thought.findById(req.params.thoughtId).select('-__v');
+    return thought
+      ? res.status(200).json(thought)
+      : res.status(404).json({ message: 'No thought with that ID' });
+  } catch (error) {
+    return res.status(400).json({ message: 'Bad request' });
   }
-  return res.status(404).json({ message: 'Invalid Thought ID' });
 }
 
-function addReaction(req, res) {
-  if (isValidObjectId(req.params.thoughtId)) {
-    return Thought.findOneAndUpdate(
-      { _id: req.params.thoughtId },
+async function updateThought(req, res) {
+  try {
+    const thought = await Thought.findByIdAndUpdate(
+      req.params.thoughtId,
+      { $set: { thoughtText: req.body.thoughtText } },
+      { new: true }
+    );
+    return thought
+      ? res.status(200).json(thought)
+      : res.status(404).json({ message: 'No thought with that ID' });
+  } catch (error) {
+    return res.status(400).json({ message: 'Bad request' });
+  }
+}
+
+async function deleteThought(req, res) {
+  try {
+    const thought = await Thought.findByIdAndDelete(req.params.thoughtId);
+    if (!thought) {
+      return res.status(404).json({ message: 'No thought with that ID' });
+    }
+    await User.findOneAndUpdate(
+      { thoughts: req.params.thoughtId },
+      { $pull: { thoughts: req.params.thoughtId } },
+      { new: true }
+    );
+    return res.status(200).json({ message: 'Thought successfully deleted' });
+  } catch (error) {
+    return res.status(400).json({ message: 'Bad request' });
+  }
+}
+
+async function addReaction(req, res) {
+  try {
+    const thought = await Thought.findByIdAndUpdate(
+      req.params.thoughtId,
       {
         $addToSet: {
           reactions: {
@@ -102,36 +82,28 @@ function addReaction(req, res) {
         },
       },
       { new: true }
-    )
-      .then((dbThoughtData) => {
-        if (!dbThoughtData) {
-          return res.status(404).json({ message: 'No Thought with that ID' });
-        }
-        return res.status(200).json(dbThoughtData);
-      })
-      .catch((error) => res.status(500).json(error));
+    );
+    return thought
+      ? res.status(200).json(thought)
+      : res.status(404).json({ message: 'No thought with that ID' });
+  } catch (error) {
+    return res.status(400).json({ message: 'Bad request' });
   }
-  return res.status(404).json({ message: 'Invalid Thought ID' });
 }
 
-function removeReaction(req, res) {
-  if (
-    isValidObjectId(req.params.thoughtId) &&
-    isValidObjectId(req.params.reactionId)
-  ) {
-    return Thought.findOneAndUpdate(
-      { _id: req.params.thoughtId },
-      { $pull: { reactions: { reactionId: req.params.reactionId } } }
-    )
-      .then((dbThoughtData) => {
-        if (!dbThoughtData) {
-          return res.status(404).json({ message: 'No Thought with that ID' });
-        }
-        return res.status(200).json(dbThoughtData);
-      })
-      .catch((error) => res.status(500).json(error));
+async function deleteReaction(req, res) {
+  try {
+    const thought = await Thought.findByIdAndUpdate(
+      req.params.thoughtId,
+      { $pull: { reactions: { reactionId: req.body.reactionId } } },
+      { new: true }
+    );
+    return thought
+      ? res.status(200).json(thought)
+      : res.status(404).json({ message: 'No thought with that ID' });
+  } catch (error) {
+    return res.status(400).json({ message: 'Bad request' });
   }
-  return res.status(404).json({ message: 'Invalid Thought ID' });
 }
 
 module.exports = {
@@ -141,5 +113,5 @@ module.exports = {
   updateThought,
   deleteThought,
   addReaction,
-  removeReaction,
+  deleteReaction,
 };
