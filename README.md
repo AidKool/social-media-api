@@ -4,17 +4,12 @@
 
 ## Description
 
-A backend API for a social network built using 
-
-![techblog](https://user-images.githubusercontent.com/73796715/153520565-0aece3e5-b0fd-4fcb-af09-abe1c3b59fb5.png)
+A backend API for a social network built using Express.js, MongoDB and the
+Mongoose ODM
 
 ## Table of Contents
 
 - [License](#license)
-
-- [Live Site](3live)
-
-- [Requirements](#requirements)
 
 - [Contributing](#contributing)
 
@@ -22,17 +17,11 @@ A backend API for a social network built using
 
 - [Usage](#usage)
 
+- [Demo](https://www.youtube.com/watch?v=i7Pgngjn_aE)
+
 ## License
 
 Project licensed under the MIT license
-
-## Live
-
-The application can be used live [here](https://a-techiers-blog.herokuapp.com/)
-
-## Requirements
-
-Developers require [Node.js](https://nodejs.org/en/) v.8.3.0 or greater
 
 ## Contributing
 
